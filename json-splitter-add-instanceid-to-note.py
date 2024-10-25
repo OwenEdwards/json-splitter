@@ -55,10 +55,13 @@ starts.append(data_len)
 for i in range(0,num_files):
     # loop through each range in array
     for n in range(starts[i],starts[i+1]):
+        if (data[n]["instanceId"]):
+            data[n]["note"] = data[n]["note"] + "\r\n\r\n[InstanceID: " + str(data[n]["instanceId"]) + "]\r\n"
+
         split_data[i].append(data[n])
     
     # create file when section is complete
-    name = os.path.basename(file_name).split('.')[0] + '_' + str(i+1) + '.json'
+    name = os.path.basename(file_name).split('.')[0] + '_' + str(i+1) + '-with-instanceID-in-note.json'
     with open(name, 'w') as outfile:
         json.dump(split_data[i], outfile)
         
