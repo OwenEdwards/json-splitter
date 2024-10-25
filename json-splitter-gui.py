@@ -9,6 +9,11 @@ if sys.version_info[0] < 3:
     print('This script requires Python 3 or higher')
     exit()
 
+# Default maximum filesize in MB
+default_max_filesize_in_mb = 150
+
+# Constant value of one megabyte
+One_MB = 1048576
 
 def json_splitter(file_name, mb_per_file):
     try:
@@ -18,7 +23,7 @@ def json_splitter(file_name, mb_per_file):
         
         if isinstance(data, list):
             data_len = len(data)
-            resultsContents.set("Valid JSON file found")
+            print("Valid JSON file found")
         else:
             return("Error: JSON is not an Array of Objects")
 
@@ -28,14 +33,16 @@ def json_splitter(file_name, mb_per_file):
     instanceID_to_note_val = instanceID_to_note.instate(['selected'])
 
     # check that file is larger than max size
-    #if file_size < mb_per_file * 1000000:
-    #    return('File smaller than split size, exiting')
+    if(not instanceID_to_note_val):
+        if file_size < mb_per_file * One_MB:
+            return('File smaller than split size (' + str(file_size) + ') and no modification needed, exiting')
+
     # determine number of files necessary
-    num_files = math.ceil(file_size/(mb_per_file*1000000))
+    num_files = math.ceil(file_size / (mb_per_file * One_MB))
     if(instanceID_to_note_val):
-        resultsContents.set('File will be split into ' + str(num_files) + ' equal parts, with the InstanceID added to the Note')
+        print('File will be split into ' + str(num_files) + ' equal parts, with the InstanceID added to the Note')
     else:
-        resultsContents.set('File will be split into ' + str(num_files) + ' equal parts')
+        print('File will be split into ' + str(num_files) + ' equal parts')
 
     # initialize 2D array
     split_data = [[] for i in range(0,num_files)]
@@ -57,7 +64,7 @@ def json_splitter(file_name, mb_per_file):
         with open(name, 'w') as outfile:
             json.dump(split_data[i], outfile)
             
-        resultsContents.set("Part " + str(i+1) + " ... completed")
+        print("Part " + str(i+1) + " ... completed")
 
     return('Success! Split completed, ' + str(num_files) + ' files created' )
 
@@ -65,10 +72,20 @@ def json_splitter(file_name, mb_per_file):
 def split_json_file():
     """Handle inputs and pass to the actual splitter
     """
-    resultsContents.set('Processing ...')
+    print('Processing ...')
     fname = ent_filename.get()
-    fsize = abs(float(ent_filesize.get()))
+    try:
+        fsize = abs(float(ent_filesize.get()))
+    except:
+        resultsContents.set("Error: you must enter a valid maximum filesize ('" + ent_filesize.get() + "' is not valid)")
+        return
+
+    if(fsize > One_MB):
+        resultsContents.set("Error: the maximum filesize of " + str(fsize) + " is too large (more than 1GB!)")
+        return
+
     result = json_splitter(fname, fsize)
+    print(result)
     resultsContents.set(result)
 
 def clear_results(*args):
@@ -79,24 +96,21 @@ window = tk.Tk()
 window.title("AMP to Platform JSON Splitter")
 window.resizable(width=False, height=False)
 
-# Create the Fahrenheit entry frame with an Entry
-# widget and label in it
+# Create the information entry frame
 frm_entry = ttk.Frame(master=window)
+
 lbl_filename = ttk.Label(master=frm_entry, text="Filename:")
 track_filename = tk.StringVar()
 ent_filename = ttk.Entry(master=frm_entry, width=100, textvariable=track_filename)
+
 lbl_filesize = ttk.Label(master=frm_entry, text="Maximum file size (MB):")
-track_filesize = tk.StringVar()
+track_filesize = tk.StringVar(value=str(default_max_filesize_in_mb))
 ent_filesize = ttk.Entry(master=frm_entry, width=4, textvariable=track_filesize)
+
 track_instanceID_to_note = tk.StringVar()
 instanceID_to_note = ttk.Checkbutton(master=frm_entry, text='Add Instance ID to Note', variable=track_instanceID_to_note)
 
-# Set the default maximum file size to 150 MB
-ent_filesize.insert(0, "150")
-
-# Don't know how to set the default value of instanceID_to_note to False!
-
-# Layout the filename Label and Entry in frm_entry
+# Layout the filename Label and Entry and other controls in frm_entry
 # using the .grid() geometry manager
 lbl_filename.grid(row=0, column=0, sticky="e")
 ent_filename.grid(row=0, column=1, sticky="w", padx=20)
@@ -104,7 +118,7 @@ lbl_filesize.grid(row=0, column=2, sticky="e")
 ent_filesize.grid(row=0, column=3, sticky="w", padx=20)
 instanceID_to_note.grid(row=0, column=4, sticky="e", padx=20)
 
-# Create the conversion Button and result display Label
+# Create the split Button and result display Label
 frm_result = ttk.Frame(master=window)
 btn_convert = ttk.Button(
     master=frm_result,
