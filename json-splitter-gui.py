@@ -95,6 +95,8 @@ def clear_results(*args):
 window = tk.Tk()
 window.title("AMP to Platform JSON Splitter")
 window.resizable(width=False, height=False)
+window.iconbitmap("AmpPlatform.ico")
+
 
 # Create the information entry frame
 frm_entry = ttk.Frame(master=window)
