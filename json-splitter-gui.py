@@ -91,11 +91,14 @@ def split_json_file():
 def clear_results(*args):
     resultsContents.set("")
 
+basedir = os.path.dirname(__file__)
+
+
 # Set up the window
 window = tk.Tk()
 window.title("AMP to Platform JSON Splitter")
 window.resizable(width=False, height=False)
-window.iconbitmap("AmpPlatform.ico")
+window.iconbitmap(os.path.join(basedir, "AmpPlatform.ico"))
 
 
 # Create the information entry frame
