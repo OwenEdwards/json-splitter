@@ -60,13 +60,13 @@ def json_splitter(file_name, mb_per_file):
             split_data[i].append(data[n])
         
         # create file when section is complete
-        name = os.path.basename(file_name).split('.')[0] + '_' + str(i+1) + '.json'
+        name = os.path.join(os.path.dirname(file_name), os.path.basename(file_name).split('.')[0] + '_' + str(i+1) + '.json')
         with open(name, 'w') as outfile:
             json.dump(split_data[i], outfile)
             
-        print("Part " + str(i+1) + " ... completed")
+        print("Part " + str(i+1) + " ... completed (file: " + name + ")")
 
-    return('Success! Split completed, ' + str(num_files) + ' files created' )
+    return('Success! Split completed, ' + str(num_files) + ' files created in folder ' + os.path.dirname(file_name) )
 
 
 def split_json_file():
@@ -91,8 +91,8 @@ def split_json_file():
 def clear_results(*args):
     resultsContents.set("")
 
-basedir = os.path.dirname(__file__)
 
+basedir = os.path.dirname(__file__)
 
 # Set up the window
 window = tk.Tk()
